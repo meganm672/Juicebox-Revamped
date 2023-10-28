@@ -15,10 +15,10 @@ async function main() {
           create: {
             title: "First Post",
             content: "This is my first post. I hope I love writing blogs as much as I love writing them.",
-            tags:{
-              create:[
-                {name:"#happy"}, 
-                {name:"#youcandoanything"}
+            tags: {
+              create: [
+                { name: "#happy" },
+                { name: "#youcandoanything" }
               ]
             }
           }
@@ -36,42 +36,42 @@ async function main() {
           create: {
             title: "How does this work?",
             content: "Seriously, does this even do anything?",
-            tags:{
-              create:[
-                {name:"#happy"}, 
-                {name:"#worst-day-ever"}
+            tags: {
+              create: [
+                { name: "#happy" },
+                { name: "#worst-day-ever" }
               ]
             }
           }
         }
       }
     }),
-    await prisma.users.create({
-      data:{
-      username: 'fashioncat',
-      password: 'kitten123',
-      name: 'alvin',
-      location: 'Upper East Side',
-      active: true,
-      posts: {
-        create: {
-          title: "Living the Glam Life",
-        content: "Do you even? I swear that half of you are posing.",
-        tags:{
-          create:[
-            {name:"#happy"}, 
-            {name:"#youcandoanything"},
-            {name:"#canmandoeverything"}
-          ]
+      await prisma.users.create({
+        data: {
+          username: 'fashioncat',
+          password: 'kitten123',
+          name: 'alvin',
+          location: 'Upper East Side',
+          active: true,
+          posts: {
+            create: {
+              title: "Living the Glam Life",
+              content: "Do you even? I swear that half of you are posing.",
+              tags: {
+                create: [
+                  { name: "#happy" },
+                  { name: "#youcandoanything" },
+                  { name: "#canmandoeverything" }
+                ]
+              }
+            }
+          }
         }
-        }
-      }
-    }
-    })
-      
-} catch (error) {
-  console.error(error)
-}
+      })
+
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 main()
