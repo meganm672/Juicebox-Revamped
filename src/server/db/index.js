@@ -12,7 +12,7 @@ async function createUser({
     location
 }) {
     try {
-        const user = await prisma.user.create({
+        const user = await prisma.users.create({
             data: {
                 username: username,
                 password: password,
@@ -83,7 +83,7 @@ async function getUserById(userId) {
 
 async function getUserByUsername(username) {
     try {
-        const user= await prisma.user.findUnique({
+        const user= await prisma.users.findUnique({
             where:{
                 username: `${username}`
             }
@@ -101,6 +101,24 @@ async function getUserByUsername(username) {
         throw error;
     }
 }
+
+async function getNullableUserByUsername(username) {
+    try {
+      const user = await prisma.users.findUnique({
+        where:{
+            username: `${username}`
+        }
+    })
+  
+      if (!user) {
+        return null;
+      }
+  
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
 
 /**
  * POST Methods
@@ -146,14 +164,14 @@ async function updatePost(postId, fields = {}) {
 
     try {
         // update any fields that need to be updated
-        if (setString.length > 0) {
-            await client.query(`
-        UPDATE posts
-        SET ${setString}
-        WHERE id=${postId}
-        RETURNING *;
-      `, Object.values(fields));
-        }
+    //     if (setString.length > 0) {
+    //         await client.query(`
+    //     UPDATE posts
+    //     SET ${setString}
+    //     WHERE id=${postId}
+    //     RETURNING *;
+    //   `, Object.values(fields));
+    //     }
 
         // return early if there's no tags to update
         if (tags === undefined) {
@@ -167,12 +185,12 @@ async function updatePost(postId, fields = {}) {
         ).join(', ');
 
         // delete any post_tags from the database which aren't in that tagList
-        await client.query(`
-      DELETE FROM post_tags
-      WHERE "tagId"
-      NOT IN (${tagListIdString})
-      AND "postId"=$1;
-    `, [postId]);
+    //     await client.query(`
+    //   DELETE FROM post_tags
+    //   WHERE "tagId"
+    //   NOT IN (${tagListIdString})
+    //   AND "postId"=$1;
+    // `, [postId]);
 
         // and create post_tags as necessary
         await addTagsToPost(postId, tagList);
@@ -288,18 +306,18 @@ async function createTags(tagList) {
 
     try {
         // insert all, ignoring duplicates
-        await client.query(`
-      INSERT INTO tags(name)
-      VALUES (${valuesStringInsert})
-      ON CONFLICT (name) DO NOTHING;
-    `, tagList);
+    //     await client.query(`
+    //   INSERT INTO tags(name)
+    //   VALUES (${valuesStringInsert})
+    //   ON CONFLICT (name) DO NOTHING;
+    // `, tagList);
 
         // grab all and return
-        const { rows } = await client.query(`
-      SELECT * FROM tags
-      WHERE name
-      IN (${valuesStringSelect});
-    `, tagList);
+    //     const { rows } = await client.query(`
+    //   SELECT * FROM tags
+    //   WHERE name
+    //   IN (${valuesStringSelect});
+    // `, tagList);
 
         return rows;
     } catch (error) {
@@ -309,11 +327,11 @@ async function createTags(tagList) {
 
 async function createPostTag(postId, tagId) {
     try {
-        await client.query(`
-      INSERT INTO post_tags("postId", "tagId")
-      VALUES ($1, $2)
-      ON CONFLICT ("postId", "tagId") DO NOTHING;
-    `, [postId, tagId]);
+    //     await client.query(`
+    //   INSERT INTO post_tags("postId", "tagId")
+    //   VALUES ($1, $2)
+    //   ON CONFLICT ("postId", "tagId") DO NOTHING;
+    // `, [postId, tagId]);
     } catch (error) {
         throw error;
     }
@@ -344,12 +362,12 @@ async function getAllTags() {
 }
 
 module.exports = {
-    client,
     createUser,
     updateUser,
     getAllUsers,
     getUserById,
     getUserByUsername,
+    getNullableUserByUsername,
     getPostById,
     createPost,
     updatePost,
