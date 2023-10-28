@@ -9,6 +9,10 @@
     "build": "vite build",
     "dev": "vite build --watch & npm run server:dev"
   },
+  "prisma": {
+    "seed": "node src/server/prisma/seed.js",
+    "schema": "src/server/prisma/schema.prisma"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
