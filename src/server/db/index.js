@@ -41,10 +41,6 @@ async function updateUser(id, fields = {}) {
     try {
         const user = await prisma.user.update({
             where: { id: `${id}` },
-            data: {
-                
-            }
-        
     });
         return user;
     } catch (error) {
@@ -54,12 +50,9 @@ async function updateUser(id, fields = {}) {
 
 async function getAllUsers() {
     try {
-        const { rows } = await client.query(`
-      SELECT id, username, name, location, active 
-      FROM users;
-    `);
+        const allUsers = await prisma.users.findMany();
 
-        return rows;
+        return allUsers;
     } catch (error) {
         throw error;
     }
@@ -67,11 +60,11 @@ async function getAllUsers() {
 
 async function getUserById(userId) {
     try {
-        const { rows: [user] } = await client.query(`
-      SELECT id, username, name, location, active
-      FROM users
-      WHERE id=${userId}
-    `);
+        const user = await prisma.user.findUnique({
+            where:{
+                id: `${userId}`
+            }
+        });
 
         if (!user) {
             throw {
@@ -90,12 +83,12 @@ async function getUserById(userId) {
 
 async function getUserByUsername(username) {
     try {
-        const { rows: [user] } = await client.query(`
-      SELECT *
-      FROM users
-      WHERE username=$1
-    `, [username]);
-
+        const user= await prisma.user.findUnique({
+            where:{
+                username: `${username}`
+            }
+        })
+     
         if (!user) {
             throw {
                 name: "UserNotFoundError",
@@ -120,11 +113,18 @@ async function createPost({
     tags = []
 }) {
     try {
-        const { rows: [post] } = await client.query(`
-      INSERT INTO posts("authorId", title, content) 
-      VALUES($1, $2, $3)
-      RETURNING *;
-    `, [authorId, title, content]);
+        const post = await prisma.posts.create({
+            data:{
+                authorId: authorId,
+                title: title,
+                content: content,
+                tags:{
+                    create:{
+                        name: name,
+                    }
+                }
+            }
+        });
 
         const tagList = await createTags(tags);
 
@@ -185,10 +185,7 @@ async function updatePost(postId, fields = {}) {
 
 async function getAllPosts() {
     try {
-        const { rows: postIds } = await client.query(`
-      SELECT id
-      FROM posts;
-    `);
+        const  postIds  = await prisma.posts.findMany();
 
         const posts = await Promise.all(postIds.map(
             post => getPostById(post.id)
@@ -202,11 +199,11 @@ async function getAllPosts() {
 
 async function getPostById(postId) {
     try {
-        const { rows: [post] } = await client.query(`
-      SELECT *
-      FROM posts
-      WHERE id=$1;
-    `, [postId]);
+        const post = await prisma.posts.findUnique({
+            where:{
+                id: `${postId}`
+            }
+        });
 
         if (!post) {
             throw {
@@ -215,18 +212,17 @@ async function getPostById(postId) {
             };
         }
 
-        const { rows: tags } = await client.query(`
-      SELECT tags.*
-      FROM tags
-      JOIN post_tags ON tags.id=post_tags."tagId"
-      WHERE post_tags."postId"=$1;
-    `, [postId])
+        const tags  = await prisma.tags.findMany({
+            where:{
+                postId: `${postId}`
+            }
+        });
 
-        const { rows: [author] } = await client.query(`
-      SELECT id, username, name, location
-      FROM users
-      WHERE id=$1;
-    `, [post.authorId])
+        const author = await prisma.users.findUnique({
+            where:{
+                id: post.authorId
+            }
+        });
 
         post.tags = tags;
         post.author = author;
@@ -241,11 +237,11 @@ async function getPostById(postId) {
 
 async function getPostsByUser(userId) {
     try {
-        const { rows: postIds } = await client.query(`
-      SELECT id 
-      FROM posts 
-      WHERE "authorId"=${userId};
-    `);
+        const  postIds = await prisma.posts.findMany({
+            where:{
+                authorId: `${userId}`
+            }
+        });
 
         const posts = await Promise.all(postIds.map(
             post => getPostById(post.id)
@@ -259,13 +255,11 @@ async function getPostsByUser(userId) {
 
 async function getPostsByTagName(tagName) {
     try {
-        const { rows: postIds } = await client.query(`
-      SELECT posts.id
-      FROM posts
-      JOIN post_tags ON posts.id=post_tags."postId"
-      JOIN tags ON tags.id=post_tags."tagId"
-      WHERE tags.name=$1;
-    `, [tagName]);
+        const postIds  = await prisma.posts.findUnique({
+            where:{
+                tags: tagName
+            }
+        });
 
         return await Promise.all(postIds.map(
             post => getPostById(post.id)
@@ -341,12 +335,9 @@ async function addTagsToPost(postId, tagList) {
 
 async function getAllTags() {
     try {
-        const { rows } = await client.query(`
-      SELECT * 
-      FROM tags;
-    `);
+        const tags = await prisma.tags.findMany();
 
-        return { rows }
+        return tags
     } catch (error) {
         throw error;
     }

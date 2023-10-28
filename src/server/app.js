@@ -22,6 +22,9 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../dist/index.html'));
 })
 
+const apiRouter = require("../server/api");
+app.use('/api', apiRouter);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
