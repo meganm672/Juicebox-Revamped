@@ -6,65 +6,131 @@ async function main() {
   try {
     await prisma.users.create({
       data: {
-        username: 'lucylulu',
+        username: 'katmeow',
         password: 'kitten12345',
         name: 'lucy lu',
         location: 'Sidney, Australia',
         active: true,
         posts: {
-          create: {
-            title: "First Post",
-            content: "This is my first post. I hope I love writing blogs as much as I love writing them.",
-            tags: {
-              create: [
-                { name: "#happy" },
-                { name: "#youcandoanything" }
-              ]
+          create: [
+            {
+              title: "First Post",
+              content: "This is my first post. I hope I love writing blogs as much as I love writing them.",
+              tags: {
+                create: [
+                  { name: "#happy" },
+                  { name: "#youcandoanything" }
+                ]
+              }
+            },
+            {
+              title: "My Post about cats",
+              content: "This is my first post about cats. I really love cats lets hope i can convey this in my post.",
+              tags: {
+                create: [
+                  { name: "#happy" },
+                  { name: "#catscatscats" }
+                ]
+              }
+            },
+            {
+              title: "My Post about dogs",
+              content: "This is my first post about dogs. All dogs are puppies no matter their age.",
+              tags: {
+                create: [
+                  { name: "#happy" },
+                  { name: "#dogsdogsdogs" }
+                ]
+              }
             }
-          }
+          ]
         }
       },
     })
     await prisma.users.create({
       data: {
-        username: 'ariel',
+        username: 'pumpkinkings',
         password: 'mermaid25',
-        name: 'ariel',
+        name: 'jack',
         location: 'Ain\'t tellin\'',
         active: true,
         posts: {
-          create: {
-            title: "How does this work?",
-            content: "Seriously, does this even do anything?",
-            tags: {
-              create: [
-                { name: "#happy" },
-                { name: "#worst-day-ever" }
-              ]
+          create: [
+            {
+              title: "How does this work?",
+              content: "Seriously, does this even do anything?",
+              tags: {
+                create: [
+                  { name: "#happy" },
+                  { name: "#worst-day-ever" }
+                ]
+              }
+            },
+            {
+              title: "My Post about cats",
+              content: "This is my first post about cats. I really love cats lets hope i can convey this in my post.",
+              tags: {
+                create: [
+                  { name: "#happy" },
+                  { name: "#catscatscats" }
+                ]
+              }
+            },
+            {
+              title: "My Post about dogs",
+              content: "This is my first post about dogs. All dogs are puppies no matter their age.",
+              tags: {
+                create: [
+                  { name: "#happy" },
+                  { name: "#dogsdogsdogs" }
+                ]
+              }
             }
-          }
+          ]
         }
       }
     }),
       await prisma.users.create({
         data: {
-          username: 'fashioncat',
+          username: 'fashioncater',
           password: 'kitten123',
-          name: 'alvin',
+          name: 'simba',
           location: 'Upper East Side',
           active: true,
           posts: {
-            create: {
-              title: "Living the Glam Life",
-              content: "Do you even? I swear that half of you are posing.",
-              tags: {
-                create: [
-                  { name: "#happy" },
-                  { name: "#youcandoanything" },
-                  { name: "#canmandoeverything" }
-                ]
+            create: [
+              {
+                title: "Living the Glam Life",
+                content: "Do you even? I swear that half of you are posing.",
+                tags: {
+                  create: [
+                    { name: "#happy" },
+                    { name: "#youcandoanything" },
+                    { name: "#canmandoeverything" }
+                  ]
+                }
+              },
+              {
+                title: "My Post about cats",
+                content: "This is my first post about cats. I really love cats lets hope i can convey this in my post.",
+                tags: {
+                  create: [
+                    { name: "#happy" },
+                    { name: "#catscatscats" }
+                  ]
+                }
+              },
+              {
+                title: "My Post about dogs",
+                content: "This is my first post about dogs. All dogs are puppies no matter their age.",
+                tags: {
+                  create: [
+                    { name: "#happy" },
+                    { name: "#dogsdogsdogs" }
+                  ]
+                }
               }
-            }
+            ]
           }
         }
       })
