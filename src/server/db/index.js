@@ -55,7 +55,7 @@ async function getAllUsers() {
     try {
         const allUsers = await prisma.users.findMany();
 
-        delete allUsers.password;
+        allUsers.forEach(user => delete user.password):
         
         return allUsers;
     } catch (error) {

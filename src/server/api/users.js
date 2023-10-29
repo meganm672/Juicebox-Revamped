@@ -17,8 +17,7 @@ const {
 usersRouter.get('/', async (req, res, next) => {
     try {
         const users = await getAllUsers();
-
-        delete users.password
+      
         res.send(users);
     } catch ({ name, message }) {
         next({ name, message });
