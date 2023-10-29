@@ -1,34 +1,27 @@
 const express = require('express');
 const postsRouter = express.Router();
-
+const prisma = require("../../../client")
 const { requireUser } = require('./utils');
 
 const {
     createPost,
-    getAllPosts,
     updatePost,
     getPostById,
   } = require('../db');
 
 postsRouter.get('/', async (req, res, next) => {
+
     try {
-      const allPosts = await getAllPosts();
-  
-      const posts = allPosts.filter(post => {
-        // the post is active, doesn't matter who it belongs to
-        if (post.active) {
-          return true;
-        }
-  
-        // the post is not active, but it belogs to the current user
-        if (req.user && post.authorId === req.user.id) {
-          return true;
-        }
-  
-        // none of the above are true
-        return false;
+      const posts = await prisma.posts.findMany({
+        where:{
+            OR:[
+                {active: true},
+                {authorId: req.user.id}
+            ],
+        },
+        include: {tags: true}
       });
-  
+
       res.send({
         posts
       });

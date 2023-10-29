@@ -31,19 +31,13 @@ async function createUser({
 }
 
 async function updateUser(id, fields = {}) {
-    // // build the set string
-    // const setString = Object.keys(fields).map(
-    //     (key, index) => `"${key}"=$${index + 1}`
-    // ).join(', ');
-
-    // // return early if this is called without fields
-    // if (setString.length === 0) {
-    //     return;
-    // }
+    
 
     try {
         const user = await prisma.user.update({
             where: { id: `${id}` },
+            data: fields,
+            
     });
         return user;
     } catch (error) {
@@ -149,16 +143,15 @@ async function createPost({
                 title: title,
                 content: content,
                 tags:{
-                    create:{
-                        name: name,
-                    }
+                    create: tags
                 }
-            }
+            },
+            include: {tags: true}
         });
 
-        const tagList = await createTags(tags);
-
-        return await addTagsToPost(post.id, tagList);
+     
+        return post;
+     
     } catch (error) {
         throw error;
     }
@@ -213,26 +206,15 @@ async function updatePost(postId, fields = {}) {
     }
 }
 
-async function getAllPosts() {
-    try {
-        const  postIds  = await prisma.posts.findMany();
 
-        const posts = await Promise.all(postIds.map(
-            post => getPostById(post.id)
-        ));
-
-        return posts;
-    } catch (error) {
-        throw error;
-    }
-}
 
 async function getPostById(postId) {
     try {
         const post = await prisma.posts.findUnique({
             where:{
                 id: postId
-            }
+            },
+            include: {tags: true, author: true}
         });
 
         if (!post) {
@@ -241,23 +223,8 @@ async function getPostById(postId) {
                 message: "Could not find a post with that postId"
             };
         }
-        //come back to this its not properly assinging the tags
-        const tags  = await prisma.tags.findMany({
-            where:{
-                id: Number(postId)
-            }
-        });
-
-        const author = await prisma.users.findUnique({
-            where:{
-                id: post.authorId
-            }
-        });
-
-        post.tags = tags;
-        post.authorId = author;
-
-        delete post.authorId;
+       
+        delete post.author.password;
 
         return post;
     } catch (error) {
@@ -303,65 +270,8 @@ async function getPostsByTagName(tagName) {
  * TAG Methods
  */
 
-async function createTags(tagList) {
-    if (tagList.length === 0) {
-        return;
-    }
 
-    const valuesStringInsert = tagList.map(
-        (_, index) => `$${index + 1}`
-    ).join('), (');
 
-    const valuesStringSelect = tagList.map(
-        (_, index) => `$${index + 1}`
-    ).join(', ');
-
-    try {
-        // insert all, ignoring duplicates
-    //     await client.query(`
-    //   INSERT INTO tags(name)
-    //   VALUES (${valuesStringInsert})
-    //   ON CONFLICT (name) DO NOTHING;
-    // `, tagList);
-
-        // grab all and return
-    //     const { rows } = await client.query(`
-    //   SELECT * FROM tags
-    //   WHERE name
-    //   IN (${valuesStringSelect});
-    // `, tagList);
-
-        return rows;
-    } catch (error) {
-        throw error;
-    }
-}
-
-async function createPostTag(postId, tagId) {
-    try {
-    //     await client.query(`
-    //   INSERT INTO post_tags("postId", "tagId")
-    //   VALUES ($1, $2)
-    //   ON CONFLICT ("postId", "tagId") DO NOTHING;
-    // `, [postId, tagId]);
-    } catch (error) {
-        throw error;
-    }
-}
-
-async function addTagsToPost(postId, tagList) {
-    try {
-        const createPostTagPromises = tagList.map(
-            tag => createPostTag(postId, tag.id)
-        );
-
-        await Promise.all(createPostTagPromises);
-
-        return await getPostById(postId);
-    } catch (error) {
-        throw error;
-    }
-}
 
 async function getAllTags() {
     try {
@@ -383,11 +293,7 @@ module.exports = {
     getPostById,
     createPost,
     updatePost,
-    getAllPosts,
     getPostsByUser,
     getPostsByTagName,
-    createTags,
     getAllTags,
-    createPostTag,
-    addTagsToPost
 }
