@@ -1,10 +1,11 @@
 const express = require('express');
 const usersRouter = express.Router();
 
-const jwt = require('jsonwebtoken');
 const prisma = require("../../../client");
 
-const {JWT_SECRET} = process.env;
+const jwt = require('jsonwebtoken');
+
+const { JWT_SECRET } = process.env
 
 const {
     createUser,
@@ -17,6 +18,7 @@ usersRouter.get('/', async (req, res, next) => {
     try {
         const users = await getAllUsers();
 
+        delete users.password
         res.send(users);
     } catch ({ name, message }) {
         next({ name, message });
@@ -35,26 +37,28 @@ usersRouter.post('/login', async (req, res, next) => {
     }
 
     try {
-        const user = await getUserByUsername(username);
+        const user = await getUserByUsername({username,password});
 
-        if (user && user.password == password) {
+        if (!user) {
+            next({
+              name: 'IncorrectCredentialsError',
+              message: 'Username or password is incorrect'
+            });
+          } else {
             const token = jwt.sign({
                 id: user.id,
                 username
             }, JWT_SECRET, {
                 expiresIn: '1w'
             });
+            delete user.password;
 
             res.send({
+                user,
                 message: "you're logged in!",
                 token
             });
-        } else {
-            next({
-                name: 'IncorrectCredentialsError',
-                message: 'Username or password is incorrect'
-            });
-        }
+        } 
     } catch (error) {
         console.log(error);
         next(error);
@@ -80,6 +84,13 @@ usersRouter.post('/register', async (req, res, next) => {
             name,
             location,
         });
+        if(!user){
+            next({
+                name: 'UserCreationError',
+                message: 'There was a problem registering. Please try again.',
+              });
+        } else{
+        delete user.password;
 
         const token = jwt.sign({
             id: user.id,
@@ -89,9 +100,11 @@ usersRouter.post('/register', async (req, res, next) => {
         });
 
         res.send({
+            user,
             message: "thank you for signing up",
             token
         });
+    }
     } catch ({ name, message }) {
         next({ name, message });
     }

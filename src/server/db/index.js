@@ -1,6 +1,8 @@
 
 
 const prisma = require("../../../client")
+const bcrypt = require('bcrypt');
+const SALT_COUNT = 10;
 /**
  * USER Methods
  */
@@ -11,11 +13,12 @@ async function createUser({
     name,
     location
 }) {
+    const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
     try {
         const user = await prisma.users.create({
             data: {
                 username: username,
-                password: password,
+                password: hashedPassword,
                 name: name,
                 location: location
             }
@@ -52,6 +55,8 @@ async function getAllUsers() {
     try {
         const allUsers = await prisma.users.findMany();
 
+        delete allUsers.password;
+        
         return allUsers;
     } catch (error) {
         throw error;
@@ -81,7 +86,10 @@ async function getUserById(userId) {
     }
 }
 
-async function getUserByUsername(username) {
+async function getUserByUsername({username,password}) {
+    if(!username || !password){
+        return;
+    }
     try {
         const user= await prisma.users.findUnique({
             where:{
@@ -90,11 +98,15 @@ async function getUserByUsername(username) {
         })
      
         if (!user) {
-            throw {
-                name: "UserNotFoundError",
-                message: "A user with that username does not exist"
-            }
+            return;
         }
+        const hashedPassword= user.password;
+
+        const passwordsMatch= await bcrypt.compare(password,hashedPassword);
+
+        if(!passwordsMatch) return;
+
+        delete user.password; 
 
         return user;
     } catch (error) {
