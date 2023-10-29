@@ -55,8 +55,8 @@ async function getAllUsers() {
     try {
         const allUsers = await prisma.users.findMany();
 
-        allUsers.forEach(user => delete user.password):
-        
+        allUsers.forEach(user => delete user.password);
+
         return allUsers;
     } catch (error) {
         throw error;
@@ -231,7 +231,7 @@ async function getPostById(postId) {
     try {
         const post = await prisma.posts.findUnique({
             where:{
-                id: `${postId}`
+                id: postId
             }
         });
 
@@ -241,10 +241,10 @@ async function getPostById(postId) {
                 message: "Could not find a post with that postId"
             };
         }
-
+        //come back to this its not properly assinging the tags
         const tags  = await prisma.tags.findMany({
             where:{
-                postId: `${postId}`
+                id: Number(postId)
             }
         });
 
@@ -255,7 +255,7 @@ async function getPostById(postId) {
         });
 
         post.tags = tags;
-        post.author = author;
+        post.authorId = author;
 
         delete post.authorId;
 
