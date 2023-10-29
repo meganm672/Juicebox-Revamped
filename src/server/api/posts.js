@@ -73,7 +73,7 @@ postsRouter.get('/', async (req, res, next) => {
 
 postsRouter.put('/:postId', requireUser, async (req, res, next) => {
     const { postId } = req.params;
-    const { title, content, tags } = req.body;
+    const { title, content, tags,  } = req.body;
   
     // const updateFields = {};
   
@@ -92,7 +92,12 @@ postsRouter.put('/:postId', requireUser, async (req, res, next) => {
     try {
       const originalPost = await prisma.posts.update({
         where:{
-            id: Number(postId)
+            AND:[
+                {id: Number(postId)},
+            // {authorId:{
+            //     equals: req.user.id
+            // }}
+        ]
         },
         data:{
             title: title,
@@ -102,15 +107,14 @@ postsRouter.put('/:postId', requireUser, async (req, res, next) => {
         include: {tags: true}
       });
   
-    //   if (originalPost.author.id === req.user.id) {
-    //     const updatedPost = await updatePost(postId, updateFields);
-    //     res.send({ post: updatedPost })
-    //   } else {
-    //     next({
-    //       name: 'UnauthorizedUserError',
-    //       message: 'You cannot update a post that is not yours'
-    //     })
-    //   }
+      if (originalPost.authorId !== req.user.id) {
+        next({
+            name: 'UnauthorizedUserError',
+            message: 'You cannot update a post that is not yours'
+          })
+      } else {
+        res.send({ post: originalPost })
+      }
     res.send({originalPost})
     } catch ({ name, message }) {
       next({ name, message });
