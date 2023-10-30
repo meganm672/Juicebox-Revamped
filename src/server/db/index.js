@@ -266,6 +266,20 @@ async function getPostsByTagName(tagName) {
     }
 }
 
+
+async function destroyPost(id) {
+    try {
+      const id = await prisma.posts.delete({
+        where:{
+            id: id
+        }
+      })
+      return id
+    } catch (error) {
+      throw error;
+    }
+  }
+
 /**
  * TAG Methods
  */
@@ -293,6 +307,7 @@ module.exports = {
     getPostById,
     createPost,
     updatePost,
+    destroyPost,
     getPostsByUser,
     getPostsByTagName,
     getAllTags,

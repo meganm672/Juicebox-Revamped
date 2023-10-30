@@ -129,4 +129,35 @@ postsRouter.put('/:postId', requireUser, async (req, res, next) => {
     }
   });
 
+
+postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
+    try {
+      const { postId } = req.params;
+      const postToUpdate = await getPostById(postId);
+      
+      if (!postToUpdate) {
+        next({
+          name: "NotFound",
+          message: `No post by ID ${postId}`
+        })
+      } else if (req.user.id !== postToUpdate.author.id) {
+        res.status(403);
+        next({
+          name: "WrongUserError",
+          message: "You must be the same user who created this post to perform this action"
+        });
+      } else {
+        const deletedPost = await prisma.posts.delete({
+            where:{
+                id: postId
+            }
+          })
+        res.send({ success: true, ...deletedPost });
+      }
+    } catch ({ name, message }) {
+      next({ name, message });
+    }
+  });
+  
+
 module.exports = postsRouter;
