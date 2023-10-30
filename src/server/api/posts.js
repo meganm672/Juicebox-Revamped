@@ -73,7 +73,7 @@ postsRouter.get('/', async (req, res, next) => {
 
 postsRouter.put('/:postId', requireUser, async (req, res, next) => {
     const { postId } = req.params;
-    const { title, content, tags,  } = req.body;
+    const { title, content, tags } = req.body;
   
     // const updateFields = {};
   
@@ -88,23 +88,31 @@ postsRouter.put('/:postId', requireUser, async (req, res, next) => {
     // if (content) {
     //   updateFields.content = content;
     // }
+    
   
     try {
       const originalPost = await prisma.posts.update({
         where:{
             AND:[
                 {id: Number(postId)},
-            // {authorId:{
-            //     equals: req.user.id
-            // }}
+            {authorId:{
+                equals: req.user.id,
+            }}
         ]
         },
         data:{
             title: title,
             content: content,
-            tags: tags
+            tags:{
+                updateMany:{
+                    where:{
+                        id: tags.id
+                    },
+                    data:{name: tags}
+                }
+            }
         },
-        include: {tags: true}
+        include: {tags: true, author:true}
       });
   
       if (originalPost.authorId !== req.user.id) {
