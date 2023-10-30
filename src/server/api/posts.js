@@ -3,11 +3,6 @@ const postsRouter = express.Router();
 const prisma = require("../../../client")
 const { requireUser } = require('./utils');
 
-const {
-    createPost,
-    updatePost,
-    getPostById,
-  } = require('../db');
 
 postsRouter.get('/', async (req, res, next) => {
 
@@ -55,8 +50,18 @@ postsRouter.get('/', async (req, res, next) => {
       postData.content = content;
       postData.tags = tags;
   
-      const post = await createPost(postData);
-  
+      const post = await prisma.posts.create({
+        data:{
+            authorId: req.user.id,
+            title: title,
+            content: content,
+            tags:{
+                create: tags
+            }
+        },
+        include: {tags: true}
+    });
+
       if (post) {
         res.send(post);
       } else {

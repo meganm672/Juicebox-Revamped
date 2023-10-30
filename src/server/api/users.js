@@ -7,16 +7,14 @@ const jwt = require('jsonwebtoken');
 
 const { JWT_SECRET } = process.env
 
-const {
-    createUser,
-    getAllUsers,
-    getUserByUsername,
-    getNullableUserByUsername,
-} = require('../db');
+const bcrypt = require('bcrypt');
+const SALT_COUNT = 10;
 
 usersRouter.get('/', async (req, res, next) => {
     try {
-        const users = await getAllUsers();
+        const users = await prisma.users.findMany();
+
+        users.forEach(user => delete user.password);
       
         res.send(users);
     } catch ({ name, message }) {
@@ -36,7 +34,11 @@ usersRouter.post('/login', async (req, res, next) => {
     }
 
     try {
-        const user = await getUserByUsername({username,password});
+        const user = await prisma.users.findUnique({
+            where:{
+                username: `${username}`
+            }
+        });
 
         if (!user) {
             next({
@@ -44,6 +46,12 @@ usersRouter.post('/login', async (req, res, next) => {
               message: 'Username or password is incorrect'
             });
           } else {
+            const hashedPassword= user.password;
+
+            const passwordsMatch= await bcrypt.compare(password,hashedPassword);
+    
+            if(!passwordsMatch) return;
+    
             const token = jwt.sign({
                 id: user.id,
                 username
@@ -66,9 +74,13 @@ usersRouter.post('/login', async (req, res, next) => {
 
 usersRouter.post('/register', async (req, res, next) => {
     const { username, password, name, location } = req.body;
-
+    const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
     try {
-        const _user = await getNullableUserByUsername(username);
+        const _user = await prisma.users.findUnique({
+            where:{
+                username: username
+            }
+        });
 
         if (_user) {
             next({
@@ -77,12 +89,15 @@ usersRouter.post('/register', async (req, res, next) => {
             });
         }
 
-        const user = await createUser({
-            username,
-            password,
-            name,
-            location,
+        const user = await prisma.users.create({
+            data: {
+                username: username,
+                password: hashedPassword,
+                name: name,
+                location: location
+            }
         });
+
         if(!user){
             next({
                 name: 'UserCreationError',
