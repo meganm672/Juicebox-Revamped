@@ -119,14 +119,18 @@ postsRouter.put('/:postId', requireUser, async (req, res, next) => {
 postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
     try {
       const { postId } = req.params;
-      const postToUpdate = await getPostById(postId);
+      const postToUpdate = await prisma.posts.findUnique({
+        where:{
+            id: Number(postId)
+        }
+    })
       
       if (!postToUpdate) {
         next({
           name: "NotFound",
           message: `No post by ID ${postId}`
         })
-      } else if (req.user.id !== postToUpdate.author.id) {
+      } else if (req.user.id !== postToUpdate.authorId) {
         res.status(403);
         next({
           name: "WrongUserError",
@@ -135,7 +139,7 @@ postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
       } else {
         const deletedPost = await prisma.posts.delete({
             where:{
-                id: postId
+                id: Number(postId)
             }
           })
         res.send({ success: true, ...deletedPost });
