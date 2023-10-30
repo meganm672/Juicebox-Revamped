@@ -74,56 +74,42 @@ postsRouter.get('/', async (req, res, next) => {
 postsRouter.put('/:postId', requireUser, async (req, res, next) => {
     const { postId } = req.params;
     const { title, content, tags } = req.body;
-  
-    // const updateFields = {};
-  
-    // if (tags && tags.length > 0) {
-    //   updateFields.tags = tags.trim().split(/\s+/);
-    // }
-  
-    // if (title) {
-    //   updateFields.title = title;
-    // }
-  
-    // if (content) {
-    //   updateFields.content = content;
-    // }
-    
-  
+
     try {
-      const originalPost = await prisma.posts.update({
-        where:{
-            AND:[
-                {id: Number(postId)},
-            {authorId:{
-                equals: req.user.id,
-            }}
-        ]
-        },
-        data:{
-            title: title,
-            content: content,
-            tags:{
-                updateMany:{
-                    where:{
-                        id: tags.id
-                    },
-                    data:{name: tags}
-                }
+        const originalPost = await prisma.posts.findUnique({
+            where:{
+                id: Number(postId)
             }
-        },
-        include: {tags: true, author:true}
-      });
-  
-      if (originalPost.authorId !== req.user.id) {
-        next({
-            name: 'UnauthorizedUserError',
-            message: 'You cannot update a post that is not yours'
-          })
+        })
+   
+
+      if (originalPost.authorId === req.user.id) {
+        const updatedPost =  await prisma.posts.update({
+                where:{
+                   id: Number(postId),
+                },
+                data:{
+                    title: title,
+                    content: content,
+                    tags:{
+                        updateMany:{
+                            where:{
+                                id: tags.id
+                            },
+                            data:{name: tags.name}
+                        }
+                    }
+                },
+                include: {tags: true}
+              });
+        res.send({ post: updatedPost })
       } else {
-        res.send({ post: originalPost })
+        next({
+          name: 'UnauthorizedUserError',
+          message: 'You cannot update a post that is not yours'
+        })
       }
-    res.send({originalPost})
+
     } catch ({ name, message }) {
       next({ name, message });
     }
