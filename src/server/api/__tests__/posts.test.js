@@ -128,6 +128,7 @@ describe('/api/posts', () =>{
                 id:1,
                 title: "Rainy Sunday",
                 content: "All the things you can do inside on a sunday",
+                authorId: 2,
                 tags: [
                     {name: "#rainraingoaway"},
                     {name: "#sundayFunday"}
@@ -138,7 +139,7 @@ describe('/api/posts', () =>{
             jwt.verify.mockReturnValue({id: userId})
             prismaMock.users.findUnique.mockResolvedValue({id:userId});
 
-            prismaMock.posts.update.mockResolvedValue(updatedPost);
+            prismaMock.posts.update.mockResolvedValue({post: updatedPost});
 
             const response = await  request(app).put('/api/posts/1').set('Authorization','Bearer testToken')
             console.log(response.body)
@@ -195,7 +196,7 @@ describe('/api/posts', () =>{
             jwt.verify.mockReturnValue({id: userId})
             prismaMock.users.findUnique.mockResolvedValue({id:userId});
 
-            prismaMock.posts.delete.mockResolvedValue(deletedPost);
+            prismaMock.posts.delete.mockResolvedValue({post:deletedPost});
 
             const response = await  request(app).delete('/api/posts/1').set('Authorization','Bearer testToken')
             console.log(response.body)

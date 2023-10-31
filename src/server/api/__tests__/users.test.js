@@ -12,11 +12,11 @@ describe('GET /api/users', () => {
             {id: 2, username: 'dogsdogsdogs',name: 'Spike Doe', password:'password', location: "Miami, Fl"}
         ];
 
-        prismaMock.user.findMany.mockResolvedValue(users);
+        prismaMock.users.findMany.mockResolvedValue({users:users});
 
         const response = await request(app).get('/api/users');
         console.log(response.body)
-        expect(response.body.users[0]).toEqual(users[0]);
+        expect(response.body).toEqual(users);
     });
 
 });

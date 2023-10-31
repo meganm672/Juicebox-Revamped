@@ -82,8 +82,8 @@ postsRouter.put('/:postId', requireUser, async (req, res, next) => {
             }
         })
    
-
       if (originalPost.authorId === req.user.id) {
+
         const updatedPost =  await prisma.posts.update({
                 where:{
                    id: Number(postId),
@@ -125,12 +125,12 @@ postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
             id: Number(postId),
         }
     })
-      
+
       if (!postToUpdate) {
         next({
           name: "NotFound",
           message: `No post by ID ${postId}`
-        })
+        }) 
       } else if (req.user.id !== postToUpdate.authorId) {
         res.status(403);
         next({
