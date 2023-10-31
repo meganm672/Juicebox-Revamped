@@ -10,7 +10,7 @@ postsRouter.get('/', async (req, res, next) => {
       const posts = await prisma.posts.findMany({
         include: {tags: true}
       });
-      //only active posts or all post by user...
+      //only active posts or all post by user... filer
       // const activePosts = await 
       res.send({
         posts
@@ -28,7 +28,7 @@ postsRouter.get('/', async (req, res, next) => {
             },
             include: {tags:true}
         });
-        res.send({postById})
+        res.send({post: postById})
     }catch({ name, message }){
         next({ name, message });
     }
