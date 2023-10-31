@@ -4,6 +4,19 @@ const app = require('../../app');
 
 const prismaMock = require('../../mocks/prismaMock');
 
-it("should do", () =>{
-    expect(true).toBe(true)
-})
+describe('GET /api/users', () => {
+    
+    it('returns list of all users', async () => {
+        const users = [
+            {id: 1, username: 'catscatscats',name: 'Cat Doe', password:'password', location: "Tampa, Fl"},
+            {id: 2, username: 'dogsdogsdogs',name: 'Spike Doe', password:'password', location: "Miami, Fl"}
+        ];
+
+        prismaMock.user.findMany.mockResolvedValue(users);
+
+        const response = await request(app).get('/api/users');
+        console.log(response.body)
+        expect(response.body.users[0]).toEqual(users[0]);
+    });
+
+});
