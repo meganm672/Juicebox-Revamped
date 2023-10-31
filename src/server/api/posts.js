@@ -8,15 +8,10 @@ postsRouter.get('/', async (req, res, next) => {
 
     try {
       const posts = await prisma.posts.findMany({
-        where:{
-            OR:[
-                {active: true},
-                {authorId: req.user.id}
-            ],
-        },
         include: {tags: true}
       });
-
+      //only active posts or all post by user...
+      // const activePosts = await 
       res.send({
         posts
       });
@@ -92,6 +87,7 @@ postsRouter.put('/:postId', requireUser, async (req, res, next) => {
         const updatedPost =  await prisma.posts.update({
                 where:{
                    id: Number(postId),
+                   authorId: req.user.id
                 },
                 data:{
                     title: title,
@@ -116,7 +112,7 @@ postsRouter.put('/:postId', requireUser, async (req, res, next) => {
       }
 
     } catch ({ name, message }) {
-      next({ name, message });
+      next({ name, message })
     }
   });
 
@@ -126,7 +122,7 @@ postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
       const { postId } = req.params;
       const postToUpdate = await prisma.posts.findUnique({
         where:{
-            id: Number(postId)
+            id: Number(postId),
         }
     })
       
@@ -144,7 +140,8 @@ postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
       } else {
         const deletedPost = await prisma.posts.delete({
             where:{
-                id: Number(postId)
+                id: Number(postId),
+                authorId: req.user.id
             }
           })
         res.send({ success: true, ...deletedPost });
