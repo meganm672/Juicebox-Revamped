@@ -110,7 +110,7 @@ describe('/api/posts', () =>{
 
         })
 
-        it('should handle the user not be logged in', async () => {
+        it('should handle if user not logged in', async () => {
             const mockErrorMessage= "You must be logged in to preform this action"
 
             prismaMock.posts.create.mockRejectedValue(new Error(mockErrorMessage));
@@ -168,7 +168,7 @@ describe('/api/posts', () =>{
             expect(prismaMock.posts.update).toHaveBeenCalledTimes(1);
         })
 
-        it('should handle the user not be logged in', async () => {
+        it('should handle user not be logged in', async () => {
             const mockErrorMessage= "You must be logged in to preform this action"
 
             prismaMock.posts.update.mockRejectedValue(new Error(mockErrorMessage));
