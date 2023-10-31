@@ -23,6 +23,19 @@ describe('/api/posts', () =>{
         
             expect(response.body.posts[0]).toEqual(posts[0]);
             expect(response.body.posts[1]).toEqual(posts[1]);
+            expect(prismaMock.posts.findMany).toHaveBeenCalledTimes(1);
+        })
+
+        it('should handle an error', async () =>{
+            const mockErrorMessage = `{"name":"Error","message":"Error occured during get all posts"}`;
+
+            prismaMock.posts.findMany.mockRejectedValue(new Error(mockErrorMessage));
+
+            const response = await request(app).get('/api/posts')
+        
+            expect(response._body.message).toEqual(mockErrorMessage);
+            expect(prismaMock.posts.findMany).toHaveBeenCalledTimes(1);
+
         })
     });
 
@@ -36,6 +49,19 @@ describe('/api/posts', () =>{
             const response = await request(app).get('/api/posts/2');
 
             expect(response.body.post.id).toEqual(post.id);
+            expect(prismaMock.posts.findUnique).toHaveBeenCalledTimes(1);
+        })
+
+        it('should handle an error', async () =>{
+            const mockErrorMessage = `{"name":"Error","message":"Error occured during get single post"}`;
+
+            prismaMock.posts.findUnique.mockRejectedValue(new Error(mockErrorMessage));
+
+            const response = await request(app).get('/api/posts/1')
+        
+            expect(response._body.message).toEqual(mockErrorMessage);
+            expect(prismaMock.posts.findUnique).toHaveBeenCalledTimes(1);
+
         })
     })
 
@@ -65,7 +91,34 @@ describe('/api/posts', () =>{
             expect(response.body.tags).toEqual(newPost.tags);
 
             expect(prismaMock.posts.create).toHaveBeenCalledTimes(1);
+        })
 
+        it('should handle an error', async () =>{
+            const mockErrorMessage = `{"name":"Error","message":"Error occured during creating post"}`;
+
+            const userId= 2
+            jwt.verify.mockReturnValue({id: userId})
+            prismaMock.users.findUnique.mockResolvedValue({id:userId});
+
+            prismaMock.posts.create.mockRejectedValue(new Error(mockErrorMessage));
+
+            const response = await request(app).post('/api/posts').set('Authorization','Bearer testToken')
+
+        
+            expect(response._body.message).toEqual(mockErrorMessage);
+            expect(prismaMock.posts.create).toHaveBeenCalledTimes(1);
+
+        })
+
+        it('should handle the user not be logged in', async () => {
+            const mockErrorMessage= "You must be logged in to preform this action"
+
+            prismaMock.posts.create.mockRejectedValue(new Error(mockErrorMessage));
+
+            const response = await request(app).post('/api/posts')
+
+            expect(response._body.message).toEqual(mockErrorMessage);
+            expect(prismaMock.posts.create).toHaveBeenCalledTimes(1);
         })
     })
 
@@ -97,6 +150,33 @@ describe('/api/posts', () =>{
             expect(prismaMock.posts.update).toHaveBeenCalledTimes(1);
 
         })
+
+        it('should handle an error', async () =>{
+            const mockErrorMessage = `{"name":"Error","message":"Error occured during updating post"}`;
+
+            const userId= 2
+            jwt.verify.mockReturnValue({id: userId})
+            prismaMock.users.findUnique.mockResolvedValue({id:userId});
+
+            prismaMock.posts.update.mockRejectedValue(new Error(mockErrorMessage));
+
+            const response = await request(app).put('/api/posts/1').set('Authorization','Bearer testToken')
+
+        
+            expect(response._body.message).toEqual(mockErrorMessage);
+            expect(prismaMock.posts.update).toHaveBeenCalledTimes(1);
+        })
+
+        it('should handle the user not be logged in', async () => {
+            const mockErrorMessage= "You must be logged in to preform this action"
+
+            prismaMock.posts.update.mockRejectedValue(new Error(mockErrorMessage));
+
+            const response = await request(app).put('/api/posts/1')
+
+            expect(response._body.message).toEqual(mockErrorMessage);
+            expect(prismaMock.posts.update).toHaveBeenCalledTimes(1);
+        })
     })
 
     describe('DELETE /api/posts/:postId', ()=>{
@@ -127,7 +207,32 @@ describe('/api/posts', () =>{
             expect(prismaMock.posts.delete).toHaveBeenCalledTimes(1);
 
         })
+        it('should handle an error', async () =>{
+            const mockErrorMessage = `{"name":"Error","message":"Error occured during deleting post"}`;
+
+            const userId= 2
+            jwt.verify.mockReturnValue({id: userId})
+            prismaMock.users.findUnique.mockResolvedValue({id:userId});
+
+            prismaMock.posts.delete.mockRejectedValue(new Error(mockErrorMessage));
+
+            const response = await request(app).delete('/api/posts/1').set('Authorization','Bearer testToken')
+
+        
+            expect(response._body.message).toEqual(mockErrorMessage);
+            expect(prismaMock.posts.delete).toHaveBeenCalledTimes(1);
+        })
+
+        it('should handle the user not be logged in', async () => {
+            const mockErrorMessage= "You must be logged in to preform this action"
+
+            prismaMock.posts.delete.mockRejectedValue(new Error(mockErrorMessage));
+
+            const response = await request(app).delete('/api/posts/1')
+
+            expect(response._body.message).toEqual(mockErrorMessage);
+            expect(prismaMock.posts.delete).toHaveBeenCalledTimes(1);
+        })
     })
 })
 
-//test update 
