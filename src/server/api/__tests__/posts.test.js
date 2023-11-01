@@ -137,7 +137,7 @@ describe('/api/posts', () => {
                 ]
             }
 
-            const userId = 2
+            // const userId = 2
             //mock that you are logged in
             jwt.verify.mockReturnValue({ id: updatedPost.authorId })
             prismaMock.users.findUnique.mockResolvedValue({ id: updatedPost.authorId});
