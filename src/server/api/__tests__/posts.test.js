@@ -77,6 +77,7 @@ describe('/api/posts', () => {
                 ]
             }
 
+             //mock that you are logged in
             const userId = 2
             jwt.verify.mockReturnValue({ id: userId })
             prismaMock.users.findUnique.mockResolvedValue({ id: userId });
@@ -96,6 +97,7 @@ describe('/api/posts', () => {
         it('should handle an error', async () => {
             const mockErrorMessage = `{"name":"Error","message":"Error occured during creating post"}`;
 
+             //mock that you are logged in
             const userId = 2
             jwt.verify.mockReturnValue({ id: userId })
             prismaMock.users.findUnique.mockResolvedValue({ id: userId });
@@ -126,9 +128,9 @@ describe('/api/posts', () => {
         it('successfully updates a post', async () => {
             const updatedPost = {
                 id: 1,
+                authorId: 2,
                 title: "Rainy Sunday",
                 content: "All the things you can do inside on a sunday",
-                authorId: 2,
                 tags: [
                     { name: "#rainraingoaway" },
                     { name: "#sundayFunday" }
@@ -136,9 +138,13 @@ describe('/api/posts', () => {
             }
 
             const userId = 2
-            jwt.verify.mockReturnValue({ id: userId })
-            prismaMock.users.findUnique.mockResolvedValue({ id: userId });
+            //mock that you are logged in
+            jwt.verify.mockReturnValue({ id: updatedPost.authorId })
+            prismaMock.users.findUnique.mockResolvedValue({ id: updatedPost.authorId});
+            console.log(updatedPost.id)
 
+            //mock the prisma calls for the put request
+            prismaMock.posts.findUnique.mockResolvedValue({ post: updatedPost.id })
             prismaMock.posts.update.mockResolvedValue({ post: updatedPost });
 
             const response = await request(app).put('/api/posts/1').set('Authorization', 'Bearer testToken')
@@ -155,6 +161,7 @@ describe('/api/posts', () => {
         it('should handle an error', async () => {
             const mockErrorMessage = `{"name":"Error","message":"Error occured during updating post"}`;
 
+             //mock that you are logged in
             const userId = 2
             jwt.verify.mockReturnValue({ id: userId })
             prismaMock.users.findUnique.mockResolvedValue({ id: userId });
@@ -184,6 +191,7 @@ describe('/api/posts', () => {
         it('successfully deletes a post', async () => {
             const deletedPost = {
                 id: 1,
+                authorId: 2,
                 title: "Rainy Sunday",
                 content: "All the things you can do inside on a sunday",
                 tags: [
@@ -192,9 +200,12 @@ describe('/api/posts', () => {
                 ]
             }
 
-            const userId = 2
-            jwt.verify.mockReturnValue({ id: userId })
-            prismaMock.users.findUnique.mockResolvedValue({ id: userId });
+             //mock that you are logged in
+            // const userId = 2
+            jwt.verify.mockReturnValue({ id: deletedPost.authorId })
+            prismaMock.users.findUnique.mockResolvedValue({ id: deletedPost.authorId });
+
+            prismaMock.posts.findUnique.mockResolvedValue({ post: deletedPost.id })
 
             prismaMock.posts.delete.mockResolvedValue({ post: deletedPost });
 
@@ -209,11 +220,26 @@ describe('/api/posts', () => {
 
         })
         it('should handle an error', async () => {
+            const deletedPost = {
+                id: 1,
+                authorId: 2,
+                title: "Rainy Sunday",
+                content: "All the things you can do inside on a sunday",
+                tags: [
+                    { name: "#rainraingoaway" },
+                    { name: "#sundayFunday" }
+                ]
+            }
             const mockErrorMessage = `{"name":"Error","message":"Error occured during deleting post"}`;
 
+            // const deletedPostId =1;
+            
+            //mock that you are logged in
             const userId = 2
             jwt.verify.mockReturnValue({ id: userId })
             prismaMock.users.findUnique.mockResolvedValue({ id: userId });
+
+            prismaMock.posts.findUnique.mockResolvedValue({ post: deletedPost.id })
 
             prismaMock.posts.delete.mockRejectedValue(new Error(mockErrorMessage));
 
