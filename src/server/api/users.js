@@ -15,7 +15,7 @@ usersRouter.get('/', async (req, res, next) => {
         const users = await prisma.users.findMany();
 
         users.forEach(user => delete user.password);
-      
+
         res.send(users);
     } catch ({ name, message }) {
         next({ name, message });
@@ -27,49 +27,49 @@ usersRouter.post('/login', async (req, res, next) => {
 
     // request must have both
     if (!username || !password) {
-  
+        res.status(500)
         next({
             name: "MissingCredentialsError",
             message: "Please supply both a username and password"
         });
-    }
+    } else {
+        try {
+            const user = await prisma.users.findUnique({
+                where: {
+                    username: `${username}`
+                }
+            });
 
-    try {
-        const user = await prisma.users.findUnique({
-            where:{
-                username: `${username}`
+            if (!user) {
+                next({
+                    name: 'IncorrectCredentialsError',
+                    message: 'Username or password is incorrect'
+                });
+            } else {
+                const hashedPassword = user.password;
+
+                const passwordsMatch = await bcrypt.compare(password, hashedPassword);
+
+                if (!passwordsMatch) return;
+
+                const token = jwt.sign({
+                    id: user.id,
+                    username
+                }, JWT_SECRET, {
+                    expiresIn: '1w'
+                });
+                delete user.password;
+
+                res.send({
+                    user,
+                    message: "you're logged in!",
+                    token
+                });
             }
-        });
-
-        if (!user) {
-            next({
-              name: 'IncorrectCredentialsError',
-              message: 'Username or password is incorrect'
-            });
-          } else {
-            const hashedPassword= user.password;
-
-            const passwordsMatch= await bcrypt.compare(password,hashedPassword);
-    
-            if(!passwordsMatch) return;
-    
-            const token = jwt.sign({
-                id: user.id,
-                username
-            }, JWT_SECRET, {
-                expiresIn: '1w'
-            });
-            delete user.password;
-
-            res.send({
-                user,
-                message: "you're logged in!",
-                token
-            });
-        } 
-    } catch (error) {
-        console.log(error);
-        next(error);
+        } catch (error) {
+            console.log(error);
+            next(error);
+        }
     }
 });
 
@@ -78,7 +78,7 @@ usersRouter.post('/register', async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
     try {
         const _user = await prisma.users.findUnique({
-            where:{
+            where: {
                 username: username
             }
         });
@@ -89,39 +89,41 @@ usersRouter.post('/register', async (req, res, next) => {
                 name: 'UserExistsError',
                 message: 'A user by that username already exists'
             });
-        }
+        } else {
 
-        const user = await prisma.users.create({
-            data: {
-                username: username,
-                password: hashedPassword,
-                name: name,
-                location: location
+
+            const user = await prisma.users.create({
+                data: {
+                    username: username,
+                    password: hashedPassword,
+                    name: name,
+                    location: location
+                }
+            });
+
+            if (!user) {
+                res.status(500)
+                next({
+                    name: 'UserCreationError',
+                    message: 'There was a problem registering. Please try again.',
+                });
+            } else {
+                delete user.password;
+
+                const token = jwt.sign({
+                    id: user.id,
+                    username
+                }, JWT_SECRET, {
+                    expiresIn: '1w'
+                });
+
+                res.send({
+                    user,
+                    message: "thank you for signing up",
+                    token
+                });
             }
-        });
-
-        if(!user){
-            res.status(500)
-            next({
-                name: 'UserCreationError',
-                message: 'There was a problem registering. Please try again.',
-              });
-        } else{
-        delete user.password;
-
-        const token = jwt.sign({
-            id: user.id,
-            username
-        }, JWT_SECRET, {
-            expiresIn: '1w'
-        });
-
-        res.send({
-            user,
-            message: "thank you for signing up",
-            token
-        });
-    }
+        }
     } catch ({ name, message }) {
         next({ name, message });
     }

@@ -244,7 +244,6 @@ describe('/api/posts', () => {
                 .delete('/api/posts/1')
                 .set('Authorization', 'Bearer testToken')
       
-            console.log(response.body)
             expect(response.body.id).toEqual(deletedPost.id);
             expect(response.body.title).toEqual(deletedPost.title);
             expect(response.body.content).toEqual(deletedPost.content);
