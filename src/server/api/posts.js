@@ -127,6 +127,7 @@ postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
     })
 
       if (!postToUpdate) {
+        res.status(404)
         next({
           name: "NotFound",
           message: `No post by ID ${postId}`

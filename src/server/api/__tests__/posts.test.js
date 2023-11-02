@@ -201,8 +201,7 @@ describe('/api/posts', () => {
             const response = await request(app)
                 .put('/api/posts/1')
                 .set('Authorization', 'Bearer testToken')
-            console.log(response.body)
-
+       
             expect(response.body.name).toBe('UnauthorizedUserError');
             expect(prismaMock.posts.update).toHaveBeenCalledTimes(0);
         })
@@ -285,6 +284,25 @@ describe('/api/posts', () => {
             expect(prismaMock.posts.delete).toHaveBeenCalledTimes(0);
         })
 
+        it('returns an error message if the post doesn\'t exist', async () => {
+            const user = {
+                id: 456,
+            }
+
+            jwt.verify.mockReturnValue({id: user.id});
+            prismaMock.users.findUnique.mockResolvedValue({ id: user.id });
+            prismaMock.posts.findUnique.mockResolvedValue(null);
+
+            const response = await request(app)
+                .delete('/api/posts/1')
+                .set('Authorization', 'Bearer faketesttoken');
+            
+            expect(response.status).toEqual(404);
+
+            expect(response.body.name).toBe('NotFound');
+
+            expect(prismaMock.posts.delete).toHaveBeenCalledTimes(0);
+        });
         it('should handle the user not be logged in', async () => {
             const mockErrorMessage = "You must be logged in to preform this action"
 
