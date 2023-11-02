@@ -11,7 +11,7 @@ postsRouter.get('/', async (req, res, next) => {
         include: {tags: true}
       });
       //only active posts or all post by user... filter
-      // const activePosts = await 
+      
       res.send({
         posts
       });

@@ -1,9 +1,12 @@
+import Posts from "./components/posts";
+
 const App = () => {
 
   return (
-    <div className="App">
-      Hello world!
-    </div>
+    <>
+    hello world
+    <Posts /> 
+    </>
   );
 }
 

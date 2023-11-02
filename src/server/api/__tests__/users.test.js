@@ -25,7 +25,6 @@ describe('/api/users', () => {
 
             prismaMock.users.findMany.mockResolvedValue(users);
 
-
             const response = await request(app).get('/api/users');
     
             expect(response.body).toEqual(users);
@@ -186,26 +185,26 @@ describe('/api/users', () => {
             expect(jwt.sign).toHaveBeenCalledTimes(0);
         });
 
-        // it('does not log in a user with the wrong password', async () => {
-        //     // mock bcrypt.compare
-        //     const loggedInUser={
-        //         username: "candyPumpkin",
-        //         password: "password"
-        //     }
-        //     // mock prisma.user.findUnique returns a user
-        //     prismaMock.users.findUnique.mockResolvedValue(loggedInUser);
-        //     const hashedPassword= "somehashedpassword";
+        it('does not log in a user with the wrong password', async () => {
+            // mock bcrypt.compare
+            const loggedInUser={
+                username: "candyPumpkin",
+                password: "password"
+            }
+            // mock prisma.user.findUnique returns a user
+            prismaMock.users.findUnique.mockResolvedValue(loggedInUser);
+            const hashedPassword= "somehashedpassword";
 
-        //     // mock that bcrypt.compare succeeded
-        //     bcrypt.compare.mockResolvedValue(hashedPassword)
-        //     // mock that jwt.sign returns the token
+            // mock that bcrypt.compare succeeded
+            bcrypt.compare.mockResolvedValue(hashedPassword)
+            // mock that jwt.sign returns the token
 
-        //     const response = await request(app).post('/api/users/login').send(loggedInUser);
-        //     console.log(response.body)
-        //     expect(prismaMock.users.findUnique).toHaveBeenCalledTimes(1)
+            const response = await request(app).post('/api/users/login').send(loggedInUser);
+            console.log(response.body)
+            expect(prismaMock.users.findUnique).toHaveBeenCalledTimes(1)
 
-        //     expect(response.body.name).toEqual('IncorrectCredentialsError');
-        // })
+            expect(response.body.name).toEqual('IncorrectCredentialsError');
+        })
     });
 
 });
