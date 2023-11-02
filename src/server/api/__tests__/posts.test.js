@@ -10,6 +10,10 @@ jest.mock('jsonwebtoken');
 
 
 describe('/api/posts', () => {
+    beforeEach(() =>{
+        jest.resetAllMocks();
+    })
+
     describe('GET /api/posts', () => {
         it('returns list of all posts', async () => {
             const posts = [
@@ -120,13 +124,64 @@ describe('/api/posts', () => {
             const response = await request(app).post('/api/posts')
 
             expect(response._body.message).toEqual(mockErrorMessage);
-            expect(prismaMock.posts.create).toHaveBeenCalledTimes(1);
+            expect(prismaMock.posts.create).toHaveBeenCalledTimes(0);
         })
     })
 
     describe('PUT /api/posts/:postId', () => {
         it('successfully updates a post', async () => {
+            const user = {id: 2} 
+            const postToUpdate = {
+                id: 1,
+                authorId: user.id,
+                title: "Rainy Sunday",
+                content: "All the things you can do inside on a sunday",
+                tags: [
+                    { name: "#rainraingoaway" },
+                    { name: "#sundayFunday" }
+                ]
+            }
+
             const updatedPost = {
+                id: 1,
+                authorId: user.id,
+                title: "Sunny Sunday",
+                content: "All the things you can do inside on a sunday",
+                tags: [
+                    { name: "#rainrainwentaway" },
+                    { name: "#sundayFunday" }
+                ]
+            }
+
+            //mock that you are logged in
+            jwt.verify.mockReturnValue({ id: user.id })
+            prismaMock.users.findUnique.mockResolvedValue({ id: user.id});
+    
+
+            //mock the prisma calls for the put request
+            prismaMock.posts.findUnique.mockResolvedValue(postToUpdate)
+            prismaMock.posts.update.mockResolvedValue(updatedPost);
+
+            const response = await request(app)
+                .put('/api/posts/1')
+                .set('Authorization', 'Bearer testToken')
+                .send(updatedPost);
+
+            expect(response.body.post.id).toEqual(updatedPost.id);
+            expect(response.body.post.title).toEqual(updatedPost.title);
+            expect(response.body.post.content).toEqual(updatedPost.content);
+            expect(response.body.post.tags).toEqual(updatedPost.tags);
+
+            expect(prismaMock.posts.update).toHaveBeenCalledTimes(1);
+
+        })
+
+        it('does not update a post if you are not the author', async () => {
+            const user={
+                id: 3
+            }
+
+            const postToUpdate = {
                 id: 1,
                 authorId: 2,
                 title: "Rainy Sunday",
@@ -137,42 +192,19 @@ describe('/api/posts', () => {
                 ]
             }
 
-            // const userId = 2
-            //mock that you are logged in
-            jwt.verify.mockReturnValue({ id: updatedPost.authorId })
-            prismaMock.users.findUnique.mockResolvedValue({ id: updatedPost.authorId});
-            console.log(updatedPost.id)
-
-            //mock the prisma calls for the put request
-            prismaMock.posts.findUnique.mockResolvedValue({ post: updatedPost.id })
-            prismaMock.posts.update.mockResolvedValue({ post: updatedPost });
-
-            const response = await request(app).put('/api/posts/1').set('Authorization', 'Bearer testToken')
-            console.log(response.body)
-            expect(response.body.id).toEqual(updatedPost.id);
-            expect(response.body.title).toEqual(updatedPost.title);
-            expect(response.body.content).toEqual(updatedPost.content);
-            expect(response.body.tags).toEqual(updatedPost.tags);
-
-            expect(prismaMock.posts.update).toHaveBeenCalledTimes(1);
-
-        })
-
-        it('should handle an error', async () => {
-            const mockErrorMessage = `{"name":"Error","message":"Error occured during updating post"}`;
-
              //mock that you are logged in
-            const userId = 2
-            jwt.verify.mockReturnValue({ id: userId })
-            prismaMock.users.findUnique.mockResolvedValue({ id: userId });
+            jwt.verify.mockReturnValue({ id: user.id })
+            prismaMock.users.findUnique.mockResolvedValue({ id: user.id });
 
-            prismaMock.posts.update.mockRejectedValue(new Error(mockErrorMessage));
+            prismaMock.posts.findUnique.mockResolvedValue(postToUpdate);
 
-            const response = await request(app).put('/api/posts/1').set('Authorization', 'Bearer testToken')
+            const response = await request(app)
+                .put('/api/posts/1')
+                .set('Authorization', 'Bearer testToken')
+            console.log(response.body)
 
-
-            expect(response._body.message).toEqual(mockErrorMessage);
-            expect(prismaMock.posts.update).toHaveBeenCalledTimes(1);
+            expect(response.body.name).toBe('UnauthorizedUserError');
+            expect(prismaMock.posts.update).toHaveBeenCalledTimes(0);
         })
 
         it('should handle user not be logged in', async () => {
@@ -183,15 +215,16 @@ describe('/api/posts', () => {
             const response = await request(app).put('/api/posts/1')
 
             expect(response._body.message).toEqual(mockErrorMessage);
-            expect(prismaMock.posts.update).toHaveBeenCalledTimes(1);
+            expect(prismaMock.posts.update).toHaveBeenCalledTimes(0);
         })
     })
 
     describe('DELETE /api/posts/:postId', () => {
         it('successfully deletes a post', async () => {
+            const user ={id: 23} 
             const deletedPost = {
                 id: 1,
-                authorId: 2,
+                authorId: user.id,
                 title: "Rainy Sunday",
                 content: "All the things you can do inside on a sunday",
                 tags: [
@@ -201,15 +234,17 @@ describe('/api/posts', () => {
             }
 
              //mock that you are logged in
-            // const userId = 2
-            jwt.verify.mockReturnValue({ id: deletedPost.authorId })
-            prismaMock.users.findUnique.mockResolvedValue({ id: deletedPost.authorId });
+            jwt.verify.mockReturnValue({ id: user.id })
+            prismaMock.users.findUnique.mockResolvedValue({ id: user.id });
 
-            prismaMock.posts.findUnique.mockResolvedValue({ post: deletedPost.id })
+            prismaMock.posts.findUnique.mockResolvedValue(deletedPost)
 
-            prismaMock.posts.delete.mockResolvedValue({ post: deletedPost });
+            prismaMock.posts.delete.mockResolvedValue(deletedPost );
 
-            const response = await request(app).delete('/api/posts/1').set('Authorization', 'Bearer testToken')
+            const response = await request(app)
+                .delete('/api/posts/1')
+                .set('Authorization', 'Bearer testToken')
+      
             console.log(response.body)
             expect(response.body.id).toEqual(deletedPost.id);
             expect(response.body.title).toEqual(deletedPost.title);
@@ -219,7 +254,8 @@ describe('/api/posts', () => {
             expect(prismaMock.posts.delete).toHaveBeenCalledTimes(1);
 
         })
-        it('should handle an error', async () => {
+        it('does not delete if you are not the user that create post', async () => {
+            const user= {id: 25}
             const deletedPost = {
                 id: 1,
                 authorId: 2,
@@ -230,24 +266,23 @@ describe('/api/posts', () => {
                     { name: "#sundayFunday" }
                 ]
             }
-            const mockErrorMessage = `{"name":"Error","message":"Error occured during deleting post"}`;
-
-            // const deletedPostId =1;
-            
+           
             //mock that you are logged in
-            const userId = 2
-            jwt.verify.mockReturnValue({ id: userId })
-            prismaMock.users.findUnique.mockResolvedValue({ id: userId });
+     
+            jwt.verify.mockReturnValue({ id: user.id })
+            prismaMock.users.findUnique.mockResolvedValue({ id: user.id });
 
-            prismaMock.posts.findUnique.mockResolvedValue({ post: deletedPost.id })
+            prismaMock.posts.findUnique.mockResolvedValue(deletedPost)
 
-            prismaMock.posts.delete.mockRejectedValue(new Error(mockErrorMessage));
+       
 
-            const response = await request(app).delete('/api/posts/1').set('Authorization', 'Bearer testToken')
+            const response = await request(app)
+                .delete('/api/posts/1')
+                .set('Authorization', 'Bearer testToken')
 
 
-            expect(response._body.message).toEqual(mockErrorMessage);
-            expect(prismaMock.posts.delete).toHaveBeenCalledTimes(1);
+            expect(response.body.name).toBe("WrongUserError");
+            expect(prismaMock.posts.delete).toHaveBeenCalledTimes(0);
         })
 
         it('should handle the user not be logged in', async () => {
@@ -258,7 +293,7 @@ describe('/api/posts', () => {
             const response = await request(app).delete('/api/posts/1')
 
             expect(response._body.message).toEqual(mockErrorMessage);
-            expect(prismaMock.posts.delete).toHaveBeenCalledTimes(1);
+            expect(prismaMock.posts.delete).toHaveBeenCalledTimes(0);
         })
     })
 })
