@@ -29,15 +29,15 @@ export default function Posts() {
     }
     if (posts) {
         return (
-            <Paper elevation={3} sx={{ margin: 2, padding: 1 }}>
+            <Paper elevation={5} sx={{ margin: 2, padding: 1 }}>
 
-                <Typography variant="h2">Juice Box Posts</Typography>
+                <Typography variant="h1" sx={{color: "blue"}}>Juice Box Posts</Typography>
                 {
                     posts.map(post => (
                         <div key={post.id}>
-                            <Typography variant="h3">{post.title}</Typography>
-                            <Typography>{post.content}</Typography>
-                            <Typography>{...post.tags}</Typography>
+                            <Typography variant="h2" sx={{color: "green"}}>{post.title}</Typography>
+                            <Typography sx={{color: "indigo"}}>{post.content}</Typography>
+                            <Typography>{post.tags.name}</Typography>
                         </div>
                     ))
                 }

@@ -1,10 +1,10 @@
 import Posts from "./components/posts";
-
+import Login from "./components/login";
 const App = () => {
 
   return (
     <>
-    hello world
+    <Login />
     <Posts /> 
     </>
   );
