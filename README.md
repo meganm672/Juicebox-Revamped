@@ -16,7 +16,7 @@ Getting Started
 
 1. Clone your repository locally
 2. Run `npm install` to install all the dependencies
-3. Setup your `.env` file locally - you can use the `.env.example` as a guideline. In particular, you will need to setup `PORT` and `DATABASE_URL` environment variables. But you may as well at a `JWT_SECRET` while you're in there.
+3. Setup your `.env` file locally to include `JWT_SECRET`
 4. Run `npm run dev` to run locally
 
 ### Initialize the Database
