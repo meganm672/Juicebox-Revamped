@@ -1,14 +1,52 @@
-# Block 34D - Improved Juicebox
+# Improved Juicebox
 
-For this project, you will be recreating the Juicebox API from scratch with the new technologies you've learned. You may structure your project as you wish as long as you meet the requirements. Feel free to use one of the previous workshop solutions as reference! Before you start, make sure to read through the rubric to get a sense of what you will be required to do.
+For this project, I recreated the Juicebox SQL API from scratch with Prisma. Fully Operational CRUD API that uses Express.JS and Prisma to create a Tumblr-like website for blogging and networking
 
-## Submission
+## Technologies Used
+* HTML 
+* Javascript
+* Prisma
+* Node
+* Jest Test
+* PostgreSQL
 
-Please submit a link to your Github repo.
+## Installation
+
+Getting Started
+
+1. Clone your repository locally
+2. Run `npm install` to install all the dependencies
+3. Setup your `.env` file locally - you can use the `.env.example` as a guideline. In particular, you will need to setup `PORT` and `DATABASE_URL` environment variables. But you may as well at a `JWT_SECRET` while you're in there.
+4. Run `npm run dev` to run locally
+
+### Initialize the Database
+Run the following command lines to add prisma and initialize the database:
+```
+npm inti -y
+```
+```
+npm install prisma --save-dev
+```
+```
+npx prisma migrate dev --name init
+```
+
+### Seed the Database
+
+This will run the `server/db/seed.js` file:
+```
+npm run seed
+```
+
+### Starting the App
+
+To just run the build + server, run:
+```
+npm run dev
+```
 
 ## How to Run the App
 
 To just run the build + server, run:
 `npm run dev`
 
-This will rebuild the React files whenever they change, and keep the server running as well, restarting if the server changes.
